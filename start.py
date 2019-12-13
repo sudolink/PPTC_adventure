@@ -17,7 +17,7 @@ class player():
     def __init__(self):
         self.img = pygame.image.load("assets/player/walk-frames/frame_03_delay-0.1s.gif")
         self.walk = [pygame.image.load(str(path_to_walk_gifs)+"/"+frame) for frame in PLAYER_WALK_GIF_locations] #Grab all the walk frames in put them here
-        print(self.walk)
+        self.walk_frames_number = len(self.walk)
         self.x = 200
         self.y = 200
         self.screen = screen
@@ -25,6 +25,7 @@ class player():
         self.speed = 0.1
         self.turned_right = True
         self.resize_self(90,160)
+        self.walking = False
 
     def resize_self(self,x,y):
         resized = []
@@ -34,16 +35,31 @@ class player():
         del resized
         self.img = pygame.transform.scale(self.img,(x,y))
 
+    def yield_walk_frame(self):
+        i = 0
+        while True:
+            yield self.walk[i]
+            i+=1
+            if i > self.walk_frames_number:
+                i = 0
+
+    def get_walk_frame(self):
+        for x in self.yield_walk_frame():
+            print(x)
+            return x
+
     def move_it(self,key):
         if key == "left":
-            ##mirror image and start playing walk loop
             if self.turned_right:
+                #set next walk frame to self.img here
                 self.img = pygame.transform.flip(self.img,True,False)
                 self.turned_right = False
+                self.walking = True
 
             self.x -= self.speed
         elif key == "right":
             if not self.turned_right:
+                #set next walk frame to self.img here
                 self.img = pygame.transform.flip(self.img,True,False)
                 self.turned_right = True
             self.x += self.speed
