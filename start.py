@@ -8,70 +8,71 @@ pygame.init()
 WHITE = (255,255 ,255)
 path_to_walk_gifs = pathlib.Path("./assets/player/walk-frames/")
 PLAYER_WALK_GIF_locations = [item.name for item in path_to_walk_gifs.glob("**/*") if item.is_file()]
-print(str(path_to_walk_gifs))
-
+#print(str(path_to_walk_gifs))
+clock = pygame.time.Clock()
 #the screen
-screen = pygame.display.set_mode((800,600))
+swidth = 1024
+sheight = 786
+screen = pygame.display.set_mode((swidth,sheight))
 
 class player():
     def __init__(self):
-        self.img = pygame.image.load("assets/player/walk-frames/frame_03_delay-0.1s.gif")
-        self.walk = [pygame.image.load(str(path_to_walk_gifs)+"/"+frame) for frame in PLAYER_WALK_GIF_locations] #Grab all the walk frames in put them here
-        self.walk_frames_number = len(self.walk)
         self.x = 200
-        self.y = 200
-        self.screen = screen
+        self.y = 400
+        self.width = 90 ##x
+        self.height = 160 ##y
+        self.speed = 10
+        self.walk_count = 0
+        self.img = pygame.image.load("assets/player/walk-frames/frame_03_delay-0.1s.gif")
+        self.walk_right = [pygame.image.load(str(path_to_walk_gifs)+"/"+frame) for frame in PLAYER_WALK_GIF_locations] #Grab all the walk frames in put them here
+        self.resize_self(self.width,self.height)
+        self.walk_left = [pygame.transform.flip(frame,True,False) for frame in self.walk_right]
+        print(self.walk_left)
         self.usable_keys = [pygame.K_a,pygame.K_d]
-        self.speed = 0.1
-        self.turned_right = True
-        self.resize_self(90,160)
-        self.walking = False
+        self.walking_right = True
 
     def resize_self(self,x,y):
         resized = []
-        for surface in self.walk:
+        for surface in self.walk_right:
             resized.append(pygame.transform.scale(surface,(x,y)))
-        self.walk = resized
+        self.walk_right = resized
         del resized
         self.img = pygame.transform.scale(self.img,(x,y))
 
-    def yield_walk_frame(self):
-        i = 0
-        while True:
-            yield self.walk[i]
-            i+=1
-            if i > self.walk_frames_number:
-                i = 0
-
-    def get_walk_frame(self):
-        for x in self.yield_walk_frame():
-            print(x)
-            return x
-
     def move_it(self,key):
-        if key == "left":
-            if self.turned_right:
-                #set next walk frame to self.img here
-                self.img = pygame.transform.flip(self.img,True,False)
-                self.turned_right = False
-                self.walking = True
+        #check if walk count is greater than the number of frames
+        #if yes, reset back to starting walk frame
+        if self.walk_count >= len(self.walk_right):
+            self.walk_count = 0
 
+        #left and right and still
+        if key == "left" and self.x > 0:
+            self.img = self.walk_left[self.walk_count]
+            self.walk_count += 1
             self.x -= self.speed
-        elif key == "right":
-            if not self.turned_right:
-                #set next walk frame to self.img here
-                self.img = pygame.transform.flip(self.img,True,False)
-                self.turned_right = True
+        elif key == "right" and self.x < swidth - self.width:
+            self.img = self.walk_right[self.walk_count]
+            self.walk_count += 1
             self.x += self.speed
+        elif key == "still":
+            self.img = self.walk_right[4] #default still img for now
 
-    def drawSelf(self,where):
-        where.blit(self.img,(self.x,self.y))
+
+    def drawSelf(self):
+        screen.blit(self.img,(self.x,self.y))
 
 
 player_one = player()
+
+def draw_screen():
+    screen.fill(WHITE)
+    player_one.drawSelf()
+    pygame.display.update()
+
 #game LOOP
 running = True
 while running:
+    clock.tick(12)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -80,10 +81,10 @@ while running:
         player_one.move_it("left")
     elif pressed[pygame.K_d]:
         player_one.move_it("right")
+    elif not any(pressed):
+        player_one.move_it("still")
 
-    screen.fill(WHITE)
-    player_one.drawSelf(screen)
-    pygame.display.update()
+    draw_screen()
 
 
 #if __name__ == "__main__":
