@@ -47,15 +47,20 @@ class player():
 
         #left and right and still
         if key == "left" and self.x > 0:
+            self.walking_right = False
             self.img = self.walk_left[self.walk_count]
             self.walk_count += 1
             self.x -= self.speed
         elif key == "right" and self.x < swidth - self.width:
+            self.walking_right = True
             self.img = self.walk_right[self.walk_count]
             self.walk_count += 1
             self.x += self.speed
         elif key == "still":
-            self.img = self.walk_right[4] #default still img for now
+            if self.walking_right:
+                self.img = self.walk_right[4] #default still img for now
+            else:
+                self.img = self.walk_left[4]
 
 
     def drawSelf(self):
