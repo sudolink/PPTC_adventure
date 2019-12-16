@@ -13,7 +13,7 @@ class create_player():
         self.y = 400
         self.width = 64 ##x
         self.height = 128 ##y
-        self.speed = 11
+        self.speed = 8
         self.walk_count = 0
         #PLAYER IMAGES#########################
         self.idles = [pygame.image.load(str(path_to_idles)+"/"+idle) for idle in PLAYER_IDLES]
@@ -23,17 +23,17 @@ class create_player():
         self.walk_left = [pygame.transform.flip(frame,True,False) for frame in self.walk_right] #mirror flip all images in walk_right to make the left walk loop
         self.img =  self.idles[0]
         #######################################
-        self.walking_right = True
+        self.walking_direction = {"down":False,"down_right":False,"right":False,"up_right":False,"up":False,"up_left":False,"left":False,"down-left":False}
         self.first_move = True
-        self.idle = True
+        self.is_idle = True
         self.moves = {"down":self.move_down,
-                    "downleft":self.move_down_left,
-                    "downright":self.move_down_right,
                     "right":self.move_right,
-                    "upright":self.move_up_right,
                     "up":self.move_up,
-                    "upleft":self.move_up_left,
-                    "left":self.move_left}
+                    "left":self.move_left,
+                    "down_left":self.move_down_left,
+                    "up_left":self.move_up_left,
+                    "down_right":self.move_down_right,
+                    "up_right":self.move_up_right}
 
     def resize_self(self,image_list):
         resized = []
@@ -47,114 +47,72 @@ class create_player():
     def size(self):
         return (self.width,self.height)
 
+######### DRAWING FUNCTION
+    def drawSelf(self,where):
+        where.blit(self.img,(self.x,self.y))
+
+
+
+##*#*#*#*#*#*##*#*#*#*#*#*#*#/  MOVEMENT /#*#*#*#*#*#*##*#*#*#*#*#*#*##
+
+    def be_idle(self):
+        if not self.is_idle:
+            self.img = self.idles[randint(0,len(self.idles)-1)] #set a random still for now
+            self.is_idle = True
+
 ############## SET WALK GIF
     def right_facing_walk(self):
         self.img = self.walk_right[self.walk_count]
-        self.walk_count += 1
+        self.is_idle = False
 
     def left_facing_walk(self):
         self.img = self.walk_left[self.walk_count]
-        self.walk_count += 1
+        self.is_idle = False
 
-
-##############      MOVING
+############## MOVING
     def move_down(self):
         self.y += self.speed
         self.right_facing_walk()
 
-    def move_down_left(self):
-        self.y += self.speed
-        self.x -= self.speed
-        self.left_facing_walk()
-        print(self.x,self.y)
-
-    def move_down_right(self):
-        self.y += self.speed
-        self.x += self.speed
-        self.right_facing_walk()
-        print(self.x,self.y)
-
     def move_right(self):
         self.x += self.speed
+        self.right_facing_walk()
+
+    def move_up(self):
+        self.y -= self.speed
+        self.left_facing_walk()
+
+    def move_left(self):
+        self.x -= self.speed
+        self.left_facing_walk()
+
+###### DIAGONALS
+
+    def move_down_left(self):
+        self.x -= self.speed
+        self.y += self.speed
+        self.left_facing_walk()
+
+    def move_up_left(self):
+        self.x -= self.speed
+        self.y -= self.speed
+        self.left_facing_walk()
+
+    def move_down_right(self):
+        self.x += self.speed
+        self.y += self.speed
         self.right_facing_walk()
 
     def move_up_right(self):
         self.x += self.speed
         self.y -= self.speed
         self.right_facing_walk()
-        print(self.x,self.y)
-
-    def move_up(self):
-        self.y -= self.speed
-        self.left_facing_walk()
-
-    def move_up_left(self):
-        self.y -= self.speed
-        self.x -= self.speed
-        self.left_facing_walk()
-        print(self.x,self.y)
-
-    def move_left(self):
-        self.x -= self.speed
-        self.left_facing_walk()
 
 ########## MOVE FUNCTION
     def move_it(self,direction):
         #check if walk count is greater than the number of frames
         #if yes, reset back to starting walk frame
+        self.walk_count += 1
         if self.walk_count >= len(self.walk_right):
             self.walk_count = 0
         self.moves[direction]()
-
-######### DRAWING FUNCTION
-    def drawSelf(self,where):
-        where.blit(self.img,(self.x,self.y))
-
-
-# #left and right, up and down, and idle
-# if (key == "left" or key == "sleft"):
-#     self.walking_right = False
-#     self.idle = False
-#
-#     if key == "left":
-#         self.img = self.walk_left[self.walk_count]
-#     elif key == "sleft":
-#         self.img = self.walk_right[self.walk_count]
-#
-#     self.walk_count += 1
-#     self.x -= self.speed
-#
-# elif (key == "right" or key == "sright"):
-#     self.walking_right = True
-#     self.idle = False
-#
-#     if key == "right":
-#         self.img = self.walk_right[self.walk_count]
-#     elif key == "sright":
-#         self.img = self.walk_left[self.walk_count]
-#
-#     self.walk_count += 1
-#     self.x += self.speed
-#
-# elif key == "up":
-#     self.walking_right=True
-#     self.idle = False
-#
-#     self.img=self.walk_right[self.walk_count]
-#     self.walk_count += 1
-#     self.y -= self.speed
-#
-# elif key == "down":
-#     self.walking_right=False
-#     self.idle = False
-#
-#     self.img=self.walk_left[self.walk_count]
-#     self.walk_count += 1
-#     self.y += self.speed
-#
-# elif key == "idle":
-#     #pick a random idle
-#     if not self.idle:
-#         random_idle_index = randint(0,len(self.idles)-1)
-#         self.img = self.idles[random_idle_index]
-#         self.idle = True

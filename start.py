@@ -1,6 +1,5 @@
 import pygame
 import pathlib
-from testing_classes import *
 from player import *
 from game_controls import *
 from random import randint
@@ -19,7 +18,7 @@ screen = pygame.display.set_mode((swidth,sheight))
 
 pygame.init()
 
-
+room =
 player_one = create_player()
 
 def draw_screen():
