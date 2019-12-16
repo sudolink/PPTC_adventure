@@ -3,6 +3,7 @@ import pathlib
 from player import *
 from game_controls import *
 from random import randint
+import rooms
 
 #initialize pygame
 pygame.init()
@@ -18,24 +19,34 @@ screen = pygame.display.set_mode((swidth,sheight))
 
 pygame.init()
 
+room_0 = rooms.room((swidth,sheight))
 
-room_0_bg = pygame.transform.scale(pygame.image.load("./assets/rooms/room_0/room_0.png"),(swidth,sheight))
-room_0_rect = room_0_bg.get_rect()
-room_0_rect.center = (swidth/2,sheight/2)
-
+all_sprites = pygame.sprite.Group()
+block_sprites = pygame.sprite.Group()
 player_one = create_player()
 
+all_sprites.add(player_one)
+##make invisiblocks
+def create_invisiblock():
+    invisiblock = rooms.invisi_block(randint(0,swidth),randint(0,sheight))
+    all_sprites.add(invisiblock)
+    block_sprites.add(invisiblock)
 
+for i in range(5):
+    create_invisiblock()
+
+player_one.get_collidables(block_sprites)
 
 ######### DRAWING FUNCTIONs
 def draw_thing(what_surface,what_img,x_y_location):
     what_surface.blit(what_img,x_y_location)
 
 def draw_screen():
-    draw_thing(screen,room_0_bg,room_0_rect)
-    draw_thing(screen,player_one.img,(player_one.x,player_one.y))
+    all_sprites.update()
+    screen.fill(WHITE)
+    draw_thing(screen,room_0.bg,(0,0))
+    all_sprites.draw(screen)
     pygame.display.flip()
-    pygame.display.update()
 
 ########## game LOOP
 running = True
