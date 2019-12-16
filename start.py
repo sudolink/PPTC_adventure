@@ -2,6 +2,7 @@ import pygame
 import pathlib
 from testing_classes import *
 from player import *
+from game_controls import *
 from random import randint
 
 #initialize pygame
@@ -19,10 +20,9 @@ screen = pygame.display.set_mode((swidth,sheight))
 pygame.init()
 
 
-player_one = player()
+player_one = create_player()
 
 def draw_screen():
-    WHITE = (randint(0,255),randint(0,255),randint(0,255))
     screen.fill(WHITE)
     player_one.drawSelf(screen)
     pygame.display.flip()
@@ -32,28 +32,13 @@ def draw_screen():
 running = True
 while running:
     clock.tick(12)
-    for event in pygame.event.get():
+    pygame.event.pump()#UPDATE EVENT STATES BEFORE CHECKING THEM
+    events = pygame.event.get()
+    #imported from game_controls
+    for event in events:
         if event.type == pygame.QUIT:
-            running = False
-    pressed = pygame.key.get_pressed()
-    if pressed[pygame.K_a]:
-        if pressed[pygame.K_LSHIFT] or pressed[pygame.K_RSHIFT]:
-            player_one.move_it("sleft")
-        else:
-            player_one.move_it("left")
-    elif pressed[pygame.K_d]:
-        if pressed[pygame.K_LSHIFT] or pressed[pygame.K_RSHIFT]:
-            player_one.move_it("sright")
-        else:
-            player_one.move_it("right")
-    elif pressed[pygame.K_w]:
-        player_one.move_it("up")
-    elif pressed[pygame.K_s]:
-        player_one.move_it("down")
-    elif not any(pressed):
-        player_one.move_it("idle")
-
-
+            quit()
+    handle_input(player_one)
 
     draw_screen()
 
