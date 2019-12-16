@@ -47,10 +47,6 @@ class create_player():
     def size(self):
         return (self.width,self.height)
 
-######### DRAWING FUNCTION
-    def drawSelf(self,where):
-        where.blit(self.img,(self.x,self.y))
-
 
 
 ##*#*#*#*#*#*##*#*#*#*#*#*#*#/  MOVEMENT /#*#*#*#*#*#*##*#*#*#*#*#*#*##

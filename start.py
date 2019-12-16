@@ -13,21 +13,31 @@ WHITE = (255,255,255)
 clock = pygame.time.Clock()
 #the screen
 swidth = 1024
-sheight = 786
+sheight = 896
 screen = pygame.display.set_mode((swidth,sheight))
 
 pygame.init()
 
-room =
+
+room_0_bg = pygame.transform.scale(pygame.image.load("./assets/rooms/room_0/room_0.png"),(swidth,sheight))
+room_0_rect = room_0_bg.get_rect()
+room_0_rect.center = (swidth/2,sheight/2)
+
 player_one = create_player()
 
+
+
+######### DRAWING FUNCTIONs
+def draw_thing(what_surface,what_img,x_y_location):
+    what_surface.blit(what_img,x_y_location)
+
 def draw_screen():
-    screen.fill(WHITE)
-    player_one.drawSelf(screen)
+    draw_thing(screen,room_0_bg,room_0_rect)
+    draw_thing(screen,player_one.img,(player_one.x,player_one.y))
     pygame.display.flip()
     pygame.display.update()
 
-#game LOOP
+########## game LOOP
 running = True
 while running:
     clock.tick(12)
