@@ -2,17 +2,18 @@ import pygame
 import pathlib
 from testing_classes import *
 from player import *
+from random import randint
 
 #initialize pygame
 pygame.init()
 
 #CONSTANTS
-WHITE = (255,255 ,255)
+WHITE = (255,255,255)
 #print(str(path_to_walk_gifs))
 clock = pygame.time.Clock()
 #the screen
-swidth = 800
-sheight = 600
+swidth = 1024
+sheight = 786
 screen = pygame.display.set_mode((swidth,sheight))
 
 pygame.init()
@@ -21,6 +22,7 @@ pygame.init()
 player_one = player()
 
 def draw_screen():
+    WHITE = (randint(0,255),randint(0,255),randint(0,255))
     screen.fill(WHITE)
     player_one.drawSelf(screen)
     pygame.display.flip()
