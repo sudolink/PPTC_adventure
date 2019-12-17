@@ -23,12 +23,11 @@ class create_player(pygame.sprite.Sprite):
         self.image =  self.idles[0]
         #######################################
         self.rect = self.image.get_rect()
-        self.rect.x = 200
-        self.rect.y = 400
+        self.rect.center = (0,0) # (x,y)
         #######################################
         self.walking_direction = {"down":False,"down_right":False,"right":False,"up_right":False,"up":False,"up_left":False,"left":False,"down-left":False}
         self.first_move = True
-        self.is_idle = True
+        self.direction = None
         self.moves = {"down":self.move_down,
                     "right":self.move_right,
                     "up":self.move_up,
@@ -37,13 +36,31 @@ class create_player(pygame.sprite.Sprite):
                     "up_left":self.move_up_left,
                     "down_right":self.move_down_right,
                     "up_right":self.move_up_right}
+        self.moves_opposites = [["down","up"],
+                                ["left","right"],
+                                ["up_left","down_right"],
+                                ["down_left","up_right"]]
 
 
 #*#*#*#*#*#*##*#*#*#*#*#*##**#*#/  COLLISION  /*#*#*#*#*#*#*#*##*#*#*#*#*#*##*
+    def prevent_movement_into_colliding_object(self):
+        collisions = self.check_collision()
+        if len(collisions) > 0:
+            for obj in collisions:
+                if self.direction != "idle":
+                    opposite = self.get_opposite_move(self.direction)
+                    self.moves[opposite]()
+                    return opposite
+
+    def get_opposite_move(self,move):
+        for move_pair in self.moves_opposites:
+            if move in move_pair:
+                return [a for a in move_pair if a != move][0]
+
+
     def check_collision(self):
         block_hit_list = pygame.sprite.spritecollide(self, self.collidables, False)
-        return bool(block_hit_list) #force a boolean value
-
+        return block_hit_list
 
     def get_collidables(self,collidable_list):
         self.collidables = collidable_list
@@ -58,35 +75,37 @@ class create_player(pygame.sprite.Sprite):
 ##*#*#*#*#*#*##*#*#*#*#*#*#*#/  MOVEMENT /#*#*#*#*#*#*##*#*#*#*#*#*#*##
 
     def be_idle(self):
-        if not self.is_idle:
+        if not self.direction == "idle":
             self.image = self.idles[randint(0,len(self.idles)-1)] #set a random still for now
-            self.is_idle = True
+            self.direction = "idle"
 
 ############## SET WALK GIF
     def right_facing_walk(self):
         self.image = self.walk_right[self.walk_count]
-        self.is_idle = False
 
     def left_facing_walk(self):
         self.image = self.walk_left[self.walk_count]
-        self.is_idle = False
 
 ############## MOVING
     def move_down(self):
         self.rect.y += self.speed
         self.right_facing_walk()
+        self.direction = "down"
 
     def move_right(self):
         self.rect.x += self.speed
         self.right_facing_walk()
+        self.direction = "right"
 
     def move_up(self):
         self.rect.y -= self.speed
         self.left_facing_walk()
+        self.direction = "up"
 
     def move_left(self):
         self.rect.x -= self.speed
         self.left_facing_walk()
+        self.direction = "left"
 
 ###### DIAGONALS
 
@@ -94,21 +113,25 @@ class create_player(pygame.sprite.Sprite):
         self.rect.x -= self.speed
         self.rect.y += self.speed
         self.left_facing_walk()
+        self.direction = "down_left"
 
     def move_up_left(self):
         self.rect.x -= self.speed
         self.rect.y -= self.speed
         self.left_facing_walk()
+        self.direction = "up_left"
 
     def move_down_right(self):
         self.rect.x += self.speed
         self.rect.y += self.speed
         self.right_facing_walk()
+        self.direction = "down_right"
 
     def move_up_right(self):
         self.rect.x += self.speed
         self.rect.y -= self.speed
         self.right_facing_walk()
+        self.direction = "up_right"
 
 ########## MOVE FUNCTION
     def move_it(self,direction):
