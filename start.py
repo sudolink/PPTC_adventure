@@ -28,12 +28,10 @@ player_one = create_player()
 all_sprites.add(player_one)
 ##make invisiblocks
 def create_invisiblock():
-    invisiblock = rooms.invisi_block(randint(0,swidth),randint(0,sheight))
+    mouse_pos = pygame.mouse.get_pos()
+    invisiblock = rooms.invisi_block(mouse_pos[0],mouse_pos[1])
     all_sprites.add(invisiblock)
     block_sprites.add(invisiblock)
-
-for i in range(5):
-    create_invisiblock()
 
 player_one.get_collidables(block_sprites)
 
@@ -58,6 +56,9 @@ while running:
     for event in events:
         if event.type == pygame.QUIT:
             quit()
+    mouse_pressed = pygame.mouse.get_pressed() #(left,middle,right)
+    if mouse_pressed[0]:
+        create_invisiblock()
     handle_input(player_one)
 
     draw_screen()

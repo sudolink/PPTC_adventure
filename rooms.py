@@ -16,5 +16,4 @@ class invisi_block(pygame.sprite.Sprite):
         self.image = pygame.Surface([40,40])
         self.image.fill((255,255,40))
         self.rect = self.image.get_rect()
-        self.rect.y = y
-        self.rect.x = x
+        self.rect.center = (x,y)
