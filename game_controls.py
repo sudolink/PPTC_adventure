@@ -1,9 +1,20 @@
 import pygame
 
+mod_keys = [pygame.K_RSHIFT,pygame.K_LSHIFT]
+move_keys = [pygame.K_w,pygame.K_a,pygame.K_s,pygame.K_d]
+
 def handle_input(player):
     pressed = pygame.key.get_pressed()
+
+    #check for mod keys like LSHIFT
+    mods_pressed = pygame.key.get_mods()
+    if mods_pressed == pygame.KMOD_LSHIFT:
+        player.speed = 16
+    else:
+        player.speed = 8
+
     #check if no other keys are pressed
-    if len(list(filter(lambda a: a == True,pressed))) < 3 and not ((pressed[pygame.K_w] and pressed[pygame.K_s]) or (pressed[pygame.K_a] and pressed[pygame.K_d])) and any(pressed):
+    if allowed_combination(pressed) and not opposite_keys_pressed(pressed) and any(pressed):
 
         disable_direction = player.prevent_movement_into_colliding_object()
         if not (pressed[pygame.K_a] or pressed[pygame.K_d]):
@@ -21,3 +32,17 @@ def handle_input(player):
 
     else:   #idle if more than 2 directions are being held down, if opposite directions are being held down, and if no directions
         player.be_idle()
+
+
+def allowed_combination(pressed):
+    how_many_pressed = 0
+    for key in move_keys:
+        how_many_pressed += pressed[key] #adds 1 if the key is get_pressed
+    return False if how_many_pressed > 2 else True
+
+
+def opposite_keys_pressed(pressed):
+    if (pressed[pygame.K_w] & pressed[pygame.K_s]) or (pressed[pygame.K_a] and pressed[pygame.K_d]):
+        return True
+    else:
+        return False

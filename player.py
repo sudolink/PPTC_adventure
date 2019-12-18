@@ -23,10 +23,10 @@ class create_player(pygame.sprite.Sprite):
         self.image =  self.idles[0]
         #######################################
         self.rect = self.image.get_rect()
-        self.rect.center = (0,0) # (x,y)
+        self.rect.center = (150,150) # (x,y)
         #######################################
         self.walking_direction = {"down":False,"down_right":False,"right":False,"up_right":False,"up":False,"up_left":False,"left":False,"down-left":False}
-        self.first_move = True
+        self.moving = False
         self.direction = None
         self.moves = {"down":self.move_down,
                     "right":self.move_right,
@@ -41,7 +41,6 @@ class create_player(pygame.sprite.Sprite):
                                 ["up_left","down_right"],
                                 ["down_left","up_right"]]
 
-
 #*#*#*#*#*#*##*#*#*#*#*#*##**#*#/  COLLISION  /*#*#*#*#*#*#*#*##*#*#*#*#*#*##*
     def prevent_movement_into_colliding_object(self):
         collisions = self.check_collision()
@@ -50,7 +49,7 @@ class create_player(pygame.sprite.Sprite):
                 if self.direction != "idle":
                     opposite = self.get_opposite_move(self.direction)
                     self.moves[opposite]()
-                    return opposite
+                    return [a for a in self.moves_opposites if a != opposite][0]
 
     def get_opposite_move(self,move):
         for move_pair in self.moves_opposites:
@@ -75,18 +74,28 @@ class create_player(pygame.sprite.Sprite):
 ##*#*#*#*#*#*##*#*#*#*#*#*#*#/  MOVEMENT /#*#*#*#*#*#*##*#*#*#*#*#*#*##
 
     def be_idle(self):
-        if not self.direction == "idle":
+        if self.moving:
             self.image = self.idles[randint(0,len(self.idles)-1)] #set a random still for now
-            self.direction = "idle"
+            self.moving = False
 
 ############## SET WALK GIF
     def right_facing_walk(self):
         self.image = self.walk_right[self.walk_count]
+        self.moving = True
 
     def left_facing_walk(self):
         self.image = self.walk_left[self.walk_count]
+        self.moving = True
 
 ############## MOVING
+    def move_it(self,direction):
+        #check if walk count is greater than the number of frames
+        #if yes, reset back to starting walk frame
+        self.walk_count += 1
+        if self.walk_count >= len(self.walk_right):
+            self.walk_count = 0
+        self.moves[direction]()
+############## DIRECTION FUNCTIONS
     def move_down(self):
         self.rect.y += self.speed
         self.right_facing_walk()
@@ -107,7 +116,7 @@ class create_player(pygame.sprite.Sprite):
         self.left_facing_walk()
         self.direction = "left"
 
-###### DIAGONALS
+###### DIAGONAL WALKS
 
     def move_down_left(self):
         self.rect.x -= self.speed
@@ -132,12 +141,3 @@ class create_player(pygame.sprite.Sprite):
         self.rect.y -= self.speed
         self.right_facing_walk()
         self.direction = "up_right"
-
-########## MOVE FUNCTION
-    def move_it(self,direction):
-        #check if walk count is greater than the number of frames
-        #if yes, reset back to starting walk frame
-        self.walk_count += 1
-        if self.walk_count >= len(self.walk_right):
-            self.walk_count = 0
-        self.moves[direction]()
