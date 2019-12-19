@@ -4,12 +4,15 @@ from player import *
 from game_controls import *
 from random import randint
 import rooms
+import time
+import sprites
 
 #initialize pygame
 pygame.init()
 
 #CONSTANTS
 WHITE = (255,255,255)
+BLACK = (0,0,0)
 #print(str(path_to_walk_gifs))
 clock = pygame.time.Clock()
 #the screen
@@ -19,37 +22,11 @@ screen = pygame.display.set_mode((swidth,sheight))
 
 pygame.init()
 
+########## init objects
 room_0 = rooms.room((swidth,sheight))
-
-all_sprites = pygame.sprite.Group()
-block_sprites = pygame.sprite.Group()
 player_one = create_player()
-room_tiles = []
-all_sprites.add(player_one)
-##make invisiblocks
-
-player_one.get_collidables(block_sprites)
 
 ######### DRAWING FUNCTIONs
-def create_invisiblock():
-    mouse_pos = pygame.mouse.get_pos()
-    invisiblock = rooms.invisi_block(mouse_pos[0],mouse_pos[1])
-    all_sprites.add(invisiblock)
-    block_sprites.add(invisiblock)
-
-def generate_room_blocks():
-    rows = room_0.rows
-    collumns = room_0.collumns
-    print(rows,collumns)
-    x = 64
-    y = 64
-    for row in range(rows-2):
-        for collumn in range(collumns-2):
-            new_tile = rooms.room_tile(x,y)
-            room_tiles.append(new_tile)
-            x+=new_tile.rect.w
-        x = 64
-        y += new_tile.rect.h
 
 def draw_things(what_surface,what_img,x_y_location):
     if type(what_img) == list:
@@ -59,14 +36,12 @@ def draw_things(what_surface,what_img,x_y_location):
         what_surface.blit(what_img,x_y_location)
 
 def draw_screen():
-    all_sprites.update()
-    screen.fill(WHITE)
-    draw_things(screen,room_0.image,(0,0))
-    draw_things(screen,room_tiles,None)
-    all_sprites.draw(screen)
+    sprites.all_sprites.update()
+    screen.fill(BLACK)
+    draw_things(screen,room_0.room_tiles,None)
+    sprites.all_sprites.draw(screen)
     pygame.display.flip()
 
-generate_room_blocks()
 ########## game LOOP
 running = True
 while running:
@@ -82,7 +57,10 @@ while running:
     ### temporary - for testing collisions
     mouse_pressed = pygame.mouse.get_pressed() #(left,middle,right)
     if mouse_pressed[0]:
-        create_invisiblock()
+        invisiblocks = rooms.create_invisiblock()
+        for invisiblock in invisiblocks:
+            sprites.all_sprites.add(invisiblock)
+            sprites.block_sprites.add(invisiblock)
 
     draw_screen()
 

@@ -1,11 +1,36 @@
 import pygame
 import pathlib
 from random import randint
+import sprites
 
 path_to_walk_gifs = pathlib.Path("./assets/character/walk-frames/")
 path_to_idles = pathlib.Path("./assets/character/idles/")
 PLAYER_WALK_GIF_locations = [item.name for item in path_to_walk_gifs.glob("**/*") if item.is_file()]
 PLAYER_IDLES = [item.name for item in path_to_idles.glob("**/*") if item.is_file()]
+
+class bottom_half(pygame.sprite.Sprite):
+    def __init__(self,parent):
+        super().__init__()
+        self.width = parent.width
+        self.height = parent.height / 2
+        self.image = pygame.Surface((self.width,self.height))
+        self.image.fill((200,20,200))
+        self.rect = self.image.get_rect()
+        self.update_position(parent.rect.x,parent.rect.y)
+        self.get_collidables(sprites.block_sprites)
+
+    def update_position(self,parent_x,parent_y):
+        self.rect.x = parent_x
+        self.rect.y = parent_y + self.height
+
+    def check_collision(self):
+        block_hit_list = pygame.sprite.spritecollide(self, self.collidables, False)
+        return block_hit_list
+
+    def get_collidables(self,collidable_list):
+        self.collidables = collidable_list
+
+
 
 class create_player(pygame.sprite.Sprite):
     def __init__(self):
@@ -23,7 +48,8 @@ class create_player(pygame.sprite.Sprite):
         self.image =  self.idles[0]
         #######################################
         self.rect = self.image.get_rect()
-        self.rect.center = (150,150) # (x,y)
+        self.rect.center = (200,500) # (x,y)
+        self.bottom = bottom_half(self)
         #######################################
         self.walking_direction = {"down":False,"down_right":False,"right":False,"up_right":False,"up":False,"up_left":False,"left":False,"down-left":False}
         self.moving = False
@@ -40,10 +66,12 @@ class create_player(pygame.sprite.Sprite):
                                 ["left","right"],
                                 ["up_left","down_right"],
                                 ["down_left","up_right"]]
+        #ADD to all sprites: own sprite and bottom sprite
+        sprites.all_sprites.add(self.bottom,self)
 
 #*#*#*#*#*#*##*#*#*#*#*#*##**#*#/  COLLISION  /*#*#*#*#*#*#*#*##*#*#*#*#*#*##*
     def prevent_movement_into_colliding_object(self):
-        collisions = self.check_collision()
+        collisions = self.bottom.check_collision()
         if len(collisions) > 0:
             for obj in collisions:
                 if self.direction != "idle":
@@ -51,19 +79,7 @@ class create_player(pygame.sprite.Sprite):
                     self.moves[opposite]()
                     return [a for a in self.moves_opposites if a != opposite][0]
 
-    def get_opposite_move(self,move):
-        for move_pair in self.moves_opposites:
-            if move in move_pair:
-                return [a for a in move_pair if a != move][0]
-
-
-    def check_collision(self):
-        block_hit_list = pygame.sprite.spritecollide(self, self.collidables, False)
-        return block_hit_list
-
-    def get_collidables(self,collidable_list):
-        self.collidables = collidable_list
-
+############################## RESIZING LOADED IMAGES
     def resize_self(self,image_list):
         resized = []
         for surface in image_list:
@@ -73,6 +89,13 @@ class create_player(pygame.sprite.Sprite):
 
 ##*#*#*#*#*#*##*#*#*#*#*#*#*#/  MOVEMENT /#*#*#*#*#*#*##*#*#*#*#*#*#*##
 
+    #return the opposite of the current direction
+    def get_opposite_move(self,move):
+        for move_pair in self.moves_opposites:
+            if move in move_pair:
+                return [a for a in move_pair if a != move][0]
+
+    #set idle - will handle idle animations in future
     def be_idle(self):
         if self.moving:
             self.image = self.idles[randint(0,len(self.idles)-1)] #set a random still for now
@@ -95,6 +118,7 @@ class create_player(pygame.sprite.Sprite):
         if self.walk_count >= len(self.walk_right):
             self.walk_count = 0
         self.moves[direction]()
+        self.bottom.update_position(self.rect.x,self.rect.y)
 ############## DIRECTION FUNCTIONS
     def move_down(self):
         self.rect.y += self.speed

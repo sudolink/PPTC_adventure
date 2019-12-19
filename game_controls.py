@@ -13,7 +13,7 @@ def handle_input(player):
     else:
         player.speed = 8
 
-    #check if no other keys are pressed
+
     if allowed_combination(pressed) and not opposite_keys_pressed(pressed) and any(pressed):
 
         disable_direction = player.prevent_movement_into_colliding_object()
