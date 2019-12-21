@@ -11,17 +11,26 @@ PLAYER_IDLES = [item.name for item in path_to_idles.glob("**/*") if item.is_file
 class bottom_half(pygame.sprite.Sprite):
     def __init__(self,parent):
         super().__init__()
-        self.width = parent.width
-        self.height = parent.height / 2
-        self.image = pygame.Surface((self.width,self.height))
+        self.dimensions = (parent.width,parent.height / 4)
+        self.image = pygame.Surface(self.dimensions)
         self.image.fill((200,20,200))
+        self.image.set_alpha(120)
         self.rect = self.image.get_rect()
+        self.radius = int(self.dimensions[0] / 5)
+        pygame.draw.circle(self.image,(255,255,255),self.rect.center,self.radius) #circle(surface, color, center, radius) -> Rect
         self.update_position(parent.rect.x,parent.rect.y)
         self.get_collidables(sprites.block_sprites)
 
     def update_position(self,parent_x,parent_y):
         self.rect.x = parent_x
-        self.rect.y = parent_y + self.height
+        self.rect.y = parent_y + self.dimensions[1] * 3
+
+    def circled_collision(self, colliders):
+        circled_collisions = []
+        for collision in colliders:
+                if pygame.sprite.collide_circle(self,collision):
+                    circled_collisions.append(collision)
+        return circled_collisions
 
     def check_collision(self):
         block_hit_list = pygame.sprite.spritecollide(self, self.collidables, False)
@@ -48,7 +57,7 @@ class create_player(pygame.sprite.Sprite):
         self.image =  self.idles[0]
         #######################################
         self.rect = self.image.get_rect()
-        self.rect.center = (200,500) # (x,y)
+        self.rect.center = (1024/2,786/2) # (x,y)
         self.bottom = bottom_half(self)
         #######################################
         self.walking_direction = {"down":False,"down_right":False,"right":False,"up_right":False,"up":False,"up_left":False,"left":False,"down-left":False}
@@ -72,6 +81,7 @@ class create_player(pygame.sprite.Sprite):
 #*#*#*#*#*#*##*#*#*#*#*#*##**#*#/  COLLISION  /*#*#*#*#*#*#*#*##*#*#*#*#*#*##*
     def prevent_movement_into_colliding_object(self):
         collisions = self.bottom.check_collision()
+        circled_collisions = self.bottom.circled_collision(collisions)
         if len(collisions) > 0:
             for obj in collisions:
                 if self.direction != "idle":

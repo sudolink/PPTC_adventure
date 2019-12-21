@@ -17,13 +17,15 @@ BLACK = (0,0,0)
 clock = pygame.time.Clock()
 #the screen
 swidth = 1024
-sheight = 896
+sheight = 786
 screen = pygame.display.set_mode((swidth,sheight))
-
+scroll = [0,0] #x,y
 pygame.init()
 
 ########## init objects
-room_0 = rooms.room((swidth,sheight))
+
+map_0_blueprint = "./assets/rooms/room_0/room_0.txt"
+room_0 = rooms.room(map_0_blueprint)
 player_one = create_player()
 
 ######### DRAWING FUNCTIONs
@@ -35,15 +37,22 @@ def draw_things(what_surface,what_img,x_y_location):
     else:
         what_surface.blit(what_img,x_y_location)
 
+def adjust_sprites_for_scroll(sprite_list,scroll):
+    for sprite in sprite_list:
+        sprite.rect.center = (sprite.rect.center[0],sprite.rect.center[1])
+
+
 def draw_screen():
     sprites.all_sprites.update()
     screen.fill(BLACK)
-    draw_things(screen,room_0.room_tiles,None)
+    #draw_things(screen,room_0.room_tiles,None)
+    adjust_sprites_for_scroll(sprites.all_sprites,scroll)
     sprites.all_sprites.draw(screen)
     pygame.display.flip()
 
 ########## game LOOP
 running = True
+
 while running:
     clock.tick(12)
     pygame.event.pump()#UPDATE EVENT STATES BEFORE CHECKING THEM
@@ -57,10 +66,9 @@ while running:
     ### temporary - for testing collisions
     mouse_pressed = pygame.mouse.get_pressed() #(left,middle,right)
     if mouse_pressed[0]:
-        invisiblocks = rooms.create_invisiblock()
-        for invisiblock in invisiblocks:
-            sprites.all_sprites.add(invisiblock)
-            sprites.block_sprites.add(invisiblock)
+        mouse_pos = pygame.mouse.get_pos()
+        rooms.create_invisiblock(mouse_pos[0],mouse_pos[1])
+
 
     draw_screen()
 

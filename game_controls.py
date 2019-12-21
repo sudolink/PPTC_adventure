@@ -15,7 +15,6 @@ def handle_input(player):
 
 
     if allowed_combination(pressed) and not opposite_keys_pressed(pressed) and any(pressed):
-
         disable_direction = player.prevent_movement_into_colliding_object()
         if not (pressed[pygame.K_a] or pressed[pygame.K_d]):
             if pressed[pygame.K_s] and disable_direction != "down": player.move_it("down")
@@ -37,12 +36,9 @@ def handle_input(player):
 def allowed_combination(pressed):
     how_many_pressed = 0
     for key in move_keys:
-        how_many_pressed += pressed[key] #adds 1 if the key is get_pressed
-    return False if how_many_pressed > 2 else True
+        how_many_pressed += pressed[key] #adds 1 if a move_key is being pressed
+    return how_many_pressed < 3
 
 
 def opposite_keys_pressed(pressed):
-    if (pressed[pygame.K_w] & pressed[pygame.K_s]) or (pressed[pygame.K_a] and pressed[pygame.K_d]):
-        return True
-    else:
-        return False
+    return (pressed[pygame.K_w] & pressed[pygame.K_s]) or (pressed[pygame.K_a] and pressed[pygame.K_d])
