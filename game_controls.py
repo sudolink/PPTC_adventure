@@ -1,4 +1,5 @@
 import pygame
+tile_size = 32
 
 mod_keys = [pygame.K_RSHIFT,pygame.K_LSHIFT]
 move_keys = [pygame.K_w,pygame.K_a,pygame.K_s,pygame.K_d]
@@ -9,9 +10,9 @@ def handle_input(player):
     #check for mod keys like LSHIFT
     mods_pressed = pygame.key.get_mods()
     if mods_pressed == pygame.KMOD_LSHIFT:
-        player.speed = 16
+        player.speed = tile_size/3
     else:
-        player.speed = 8
+        player.speed = tile_size/4
 
 
     if allowed_combination(pressed) and not opposite_keys_pressed(pressed) and any(pressed):

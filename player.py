@@ -8,7 +8,7 @@ path_to_idles = pathlib.Path("./assets/character/idles/")
 PLAYER_WALK_GIF_locations = [item.name for item in path_to_walk_gifs.glob("**/*") if item.is_file()]
 PLAYER_IDLES = [item.name for item in path_to_idles.glob("**/*") if item.is_file()]
 
-class bottom_half(pygame.sprite.Sprite):
+class Player_collider_rect(pygame.sprite.Sprite):
     def __init__(self,parent):
         super().__init__()
         self.dimensions = (parent.width,parent.height / 4)
@@ -19,7 +19,6 @@ class bottom_half(pygame.sprite.Sprite):
         self.radius = int(self.dimensions[0] / 5)
         pygame.draw.circle(self.image,(255,255,255),self.rect.center,self.radius) #circle(surface, color, center, radius) -> Rect
         self.update_position(parent.rect.x,parent.rect.y)
-        self.get_collidables(sprites.block_sprites)
 
     def update_position(self,parent_x,parent_y):
         self.rect.x = parent_x
@@ -33,19 +32,17 @@ class bottom_half(pygame.sprite.Sprite):
         return circled_collisions
 
     def check_collision(self):
-        block_hit_list = pygame.sprite.spritecollide(self, self.collidables, False)
+        block_hit_list = pygame.sprite.spritecollide(self, sprites.block_sprites, False)
         return block_hit_list
 
-    def get_collidables(self,collidable_list):
-        self.collidables = collidable_list
 
 
-
-class create_player(pygame.sprite.Sprite):
-    def __init__(self):
+class Player(pygame.sprite.Sprite):
+    def __init__(self,update_camera):
         super().__init__()
-        self.width = 64 ##x
-        self.height = 128 ##y
+        self.tile_size = 32
+        self.width = self.tile_size ##x
+        self.height = self.tile_size*2 ##y
         self.speed = 8
         self.walk_count = 0
         #PLAYER IMAGES#########################
@@ -58,7 +55,7 @@ class create_player(pygame.sprite.Sprite):
         #######################################
         self.rect = self.image.get_rect()
         self.rect.center = (1024/2,786/2) # (x,y)
-        self.bottom = bottom_half(self)
+        self.bottom = Player_collider_rect(self)
         #######################################
         self.walking_direction = {"down":False,"down_right":False,"right":False,"up_right":False,"up":False,"up_left":False,"left":False,"down-left":False}
         self.moving = False
@@ -77,6 +74,8 @@ class create_player(pygame.sprite.Sprite):
                                 ["down_left","up_right"]]
         #ADD to all sprites: own sprite and bottom sprite
         sprites.all_sprites.add(self.bottom,self)
+        sprites.visible_sprites.add(self.bottom,self)
+        self.update_camera = update_camera
 
 #*#*#*#*#*#*##*#*#*#*#*#*##**#*#/  COLLISION  /*#*#*#*#*#*#*#*##*#*#*#*#*#*##*
     def prevent_movement_into_colliding_object(self):
@@ -115,10 +114,12 @@ class create_player(pygame.sprite.Sprite):
     def right_facing_walk(self):
         self.image = self.walk_right[self.walk_count]
         self.moving = True
+        self.update_camera()
 
     def left_facing_walk(self):
         self.image = self.walk_left[self.walk_count]
         self.moving = True
+        self.update_camera()
 
 ############## MOVING
     def move_it(self,direction):
@@ -129,6 +130,8 @@ class create_player(pygame.sprite.Sprite):
             self.walk_count = 0
         self.moves[direction]()
         self.bottom.update_position(self.rect.x,self.rect.y)
+
+
 ############## DIRECTION FUNCTIONS
     def move_down(self):
         self.rect.y += self.speed

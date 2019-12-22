@@ -2,7 +2,7 @@ import pathlib
 import pygame
 import sprites
 
-tile_size = 64
+tile_size = 32
 path_to_rooms = pathlib.Path("./assets/rooms/")
 path_to_room_blocks = pathlib.Path("./assets/rooms/room_0")
 
