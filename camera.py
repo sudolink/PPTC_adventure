@@ -3,7 +3,7 @@ import player
 import sprites
 
 class Camera(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self,room_entry_point):
         super().__init__()
         self.width = 800
         self.height = 600
@@ -12,12 +12,7 @@ class Camera(pygame.sprite.Sprite):
         self.image.fill((255,255,255))
         self.image.set_alpha(50)
         self.rect = self.image.get_rect()
-        self.player = player.Player(self.update_position)
+        self.rect.center = room_entry_point
         sprites.all_sprites.add(self)
         sprites.visible_sprites.add(self)
-
-    def update_position(self):
-        self.rect.center = self.player.rect.center
-
-    def colliding_sprites(self):
-        return pygame.sprite.spritecollide(self, sprites.all_sprites, False)
+        self.speed = 10

@@ -6,13 +6,20 @@ tile_size = 32
 path_to_rooms = pathlib.Path("./assets/rooms/")
 path_to_room_blocks = pathlib.Path("./assets/rooms/room_0")
 
-class room():
+class Room():
     def __init__(self,blueprint_path):
         self.tile_map = [] #
-        self.tiles = []
+        self.tiles = pygame.sprite.Group()
+        self.entry_point = None
         self.tile_map_from_file(blueprint_path)
-        self.build_from_blueprint()
         self.dimensions = (len(self.tile_map[0])*tile_size,len(self.tile_map)*tile_size)
+        self.width = int(self.dimensions[0])
+        self.height = (self.dimensions[1])
+        self.image = pygame.Surface((self.width,self.height))
+        self.rect = self.image.get_rect()
+        self.image.set_alpha(100)
+        self.image.fill((255,10,255))
+        self.build_from_blueprint()
         print(self.dimensions)
 
     def tile_map_from_file(self,blueprint_path):
@@ -20,35 +27,40 @@ class room():
             for line in map.readlines():
                 self.tile_map.append(line.strip("\n").split(","))
 
+    def move_tiles_with_room(self,x,y):
+        for tile in self.tiles:
+            self.rect.y -= y
+            tile.rect.y -= y
+
+
     def build_from_blueprint(self):
 
-        y = 0
+        y = self.rect.y
         for line in self.tile_map:
-            x = 0
+            x = self.rect.x
             for tile in line:
                 if tile == "00":
                     x += tile_size
                 elif tile == "01":
                     wall = wall_tile(x,y)
-                    self.tiles.append(wall)
-                    sprites.all_sprites.add(wall)
-                    sprites.block_sprites.add(wall)
+                    self.tiles.add(wall)
                     x += tile_size
                 elif tile == "02":
                     floor = floor_tile(x,y)
-                    self.tiles.append(floor)
-                    sprites.all_sprites.add(floor)
+                    self.tiles.add(floor)
                     x += tile_size
                 elif tile == "33":
                     object = object_tile(x,y)
-                    self.tiles.append(object)
-                    sprites.all_sprites.add(object)
-                    sprites.block_sprites.add(object)
+                    self.tiles.add(object)
                     x += tile_size
                 elif tile == "99":
                     door = door_tile(x,y)
-                    self.tiles.append(door)
-                    sprites.all_sprites.add(door)
+                    self.tiles.add(door)
+                    x += tile_size
+                elif tile == "98":
+                    door = door_tile(x,y)
+                    self.entry_point = door.rect.center
+                    self.tiles.add(door)
                     x += tile_size
                 else:
                     print("build_from_blueprint went horribly wrong!")
