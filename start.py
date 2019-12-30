@@ -1,12 +1,12 @@
 import pygame
 import pathlib
-from player import *
+import player
 from game_controls import *
 from random import randint
 import time
 import sprites
-import camera
 import rooms
+import camera
 
 #initialize pygame
 pygame.init()
@@ -19,14 +19,16 @@ clock = pygame.time.Clock()
 #the screen
 swidth = 1024
 sheight = 786
+screen_size = (swidth,sheight)
 screen_center = (swidth/2,sheight/2)
 screen = pygame.display.set_mode((swidth,sheight)) #,pygame.FULLSCREEN,16
 pygame.init()
 
 ########## init objects
 
-room_0 = rooms.Room("./assets/rooms/room_0/room_0.txt")
-viewport = camera.Camera(room_0.entry_point)
+room_0 = rooms.Room("./assets/rooms/room_0/room_0.txt",screen_size)
+viewport = camera.Viewport(screen_size)
+player_0 = player.Player(screen_center,rooms.tile_size)
 ######### DRAWING FUNCTIONs
 
 def draw_things(what_surface,what_img,x_y_location):
@@ -37,25 +39,32 @@ def draw_things(what_surface,what_img,x_y_location):
         what_surface.blit(what_img,x_y_location)
 
 def draw_screen():
-    sprites.all_sprites.update()
     room_0.tiles.update()
+    room_0.invisiwalls.update()
+    sprites.all_sprites.update()
+    sprites.player_sprite.update()
+    sprites.inner_view_sprite.update()
     screen.fill(BLACK)
     room_0.tiles.draw(screen)
     sprites.all_sprites.draw(screen)
+    sprites.inner_view_sprite.draw(screen)
+    sprites.player_sprite.draw(screen)
+    sprites.inner_view_sprite.draw(screen)
+    room_0.invisiwalls.draw(screen)
     pygame.display.flip()
 
-########## game LOOP
+########## game LOOP #########
 running = True
 
 while running:
-    clock.tick(12)
+    clock.tick(60)
     pygame.event.pump()#UPDATE EVENT STATES BEFORE CHECKING THEM
     events = pygame.event.get()
     for event in events:
         if event.type == pygame.QUIT:
             quit()
 
-    handle_input(room_0)
+    handle_input(room_0,player_0,viewport)
 
     ### temporary - for testing collisions
     mouse_pressed = pygame.mouse.get_pressed() #(left,middle,right)
