@@ -3,7 +3,7 @@ import pygame
 import sprites
 import random
 
-tile_size = 64
+tile_size = 96
 path_to_rooms = pathlib.Path("./assets/rooms/")
 path_to_room_blocks = pathlib.Path("./assets/rooms/room_0")
 
@@ -119,7 +119,7 @@ class outline_tile(room_tile):
     def __init__(self,x,y,tile_code):
         super().__init__(x,y,"./assets/rooms/room_0/wall.png",tile_code)
         self.image = pygame.Surface((tile_size,tile_size))
-        self.image.set_alpha(40)
+        self.image.set_alpha(0)
         self.image.fill((255,255,40))
 
 class floor_tile(room_tile):
@@ -147,7 +147,7 @@ class invisi_block(pygame.sprite.Sprite):
         super().__init__()
         self.dimensions = (tile_size,tile_size)
         self.image = pygame.Surface(self.dimensions)
-        self.image.set_alpha(90)
+        self.image.set_alpha(0)
         self.image.fill((255,255,40))
         self.rect = self.image.get_rect()
         self.rect.center = (x,y)

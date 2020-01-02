@@ -16,6 +16,8 @@ def handle_input(room,player,viewport):
 
     viewport.move(player.rect.center)
 
+    handle_collision(player,room)
+
     if any(pressed) and allowed_combination(pressed) and not opposite_keys(pressed):
         if not (pressed[pygame.K_a] or pressed[pygame.K_d]):
             if pressed[pygame.K_s]:
@@ -46,6 +48,8 @@ def handle_input(room,player,viewport):
             player.move(player_moves["up_left"],"up_left")
             room.move_map(map_moves["up_left"])
 
+        if pressed[pygame.K_ESCAPE]:
+            pygame.quit()
     else:   #idle if more than 2 directions are being held down, if opposite directions are being held down, and if no directions
         #player-idle
         pass
@@ -60,6 +64,15 @@ def allowed_combination(pressed):
 
 def opposite_keys(pressed):
     return (pressed[pygame.K_w] & pressed[pygame.K_s]) or (pressed[pygame.K_a] and pressed[pygame.K_d])
+
+
+def handle_collision(player,room):
+    if player.collision_rect.check_collision(room.invisiwalls):
+        opposite_direction = player.opposite_direction[player.direction]
+        player.move(player_moves[opposite_direction],opposite_direction)
+        player.be_idle()
+        room.move_map(map_moves[opposite_direction])
+
 
 #
 # if not (pressed[pygame.K_a] or pressed[pygame.K_d]):

@@ -24,15 +24,18 @@ class Player(pygame.sprite.Sprite):
         self.load_walks()
         self.walk_frame = 0
         self.idles = self.resize_self(self.idles)
-
+        self.direction = "idle"
+        self.opposite_direction = {"up":"down","left":"right","up_left":"down_right","up_right":"down_left",
+                                "down":"up","right":"left","down_right":"up_left","down_left":"up_right"}
         self.image =  self.idles[0]
         #######################################
         self.rect = self.image.get_rect()
         self.rect.center = loc
         #######################################
-
         #ADD to all sprites: own sprite and bottom sprite
-        sprites.player_sprite.add(self)
+        self.collision_rect = Player_collision_block(self,tile_size)
+        self.shadow = Player_shadow(self,tile_size)
+        sprites.player_sprite.add(self,self.collision_rect)
 
 ############################## RESIZING LOADED IMAGES
     def resize_self(self,image_list):
@@ -87,3 +90,36 @@ class Player(pygame.sprite.Sprite):
         #self.rect.x += scroll[0]
         #self.rect.y += scroll[1]
         self.animate_walk(direction)
+        self.direction = direction
+
+    def be_idle(self):
+        self.image = self.idles[0]
+###############################
+class Player_collision_block(pygame.sprite.Sprite):
+    def __init__(self,other,tile_size):
+        super().__init__()
+        self.width = tile_size
+        self.height = tile_size/4
+        self.image = pygame.Surface((self.width,self.height))
+        self.image.fill((0,100,255))
+        self.rect = self.image.get_rect()
+        self.rect.center = other.rect.center
+        self.rect.y += tile_size - self.height/2
+
+    def check_collision(self,colliding_sprite_list):
+        return pygame.sprite.spritecollide(self,colliding_sprite_list,False)
+
+class Player_shadow():
+    def __init__(self,other,tile_size):
+        self.width = tile_size
+        self.height = tile_size/2
+        self.image = pygame.Surface((self.width,self.height),pygame.SRCALPHA)
+        self.rect = self.image.get_rect()
+        self.rect.center = other.rect.center
+        self.rect.y = other.rect.y + other.rect.height - self.height * 1.3
+        self.rect.x = other.rect.x - self.width / 2
+
+
+    def cast_shadow(self):
+        pygame.draw.ellipse(self.image,(0,0,0,60),self.image.get_rect())
+        #pygame.draw.rect(self.image,(0,0,255,150),self.image.get_rect(),10)
