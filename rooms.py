@@ -3,84 +3,74 @@ import pygame
 import sprites
 import random
 
-tile_size = 96
+tile_size = 64
 path_to_rooms = pathlib.Path("./assets/rooms/")
 path_to_room_blocks = pathlib.Path("./assets/rooms/room_0")
 
 class Room():
-    def __init__(self,blueprint_path,screen_size):
+    def __init__(self,png_path,invisiwalls_path,screen_size):
         self.tile_map = [] #
         self.tiles = pygame.sprite.Group()
         self.invisiwalls = pygame.sprite.Group()
         self.entry_point = None
-        self.tile_map_from_file(blueprint_path)
-        self.dimensions = (len(self.tile_map[0])*tile_size,len(self.tile_map)*tile_size)
-        self.width = self.dimensions[0]
-        self.height = self.dimensions[1]
-        self.image = pygame.Surface((self.width,self.height))
+        self.image = self.map_from_png(png_path)
+        self.tile_map = self.tile_map_from_file(invisiwalls_path)
         self.rect = self.image.get_rect()
-        self.image.set_alpha(255)
-        self.image.fill((255,10,255))
-        self.entry_loc = (0,0)
-        self.build_from_blueprint()
-        self.offset_for_entry_tile(screen_size) #offset layout to center on entry door
+        self.offset_for_entry_tile(screen_size)
         self.build_invisiwalls()
-        # print(self.entry_loc)
-        # print(self.dimensions)
 
-    def tile_map_from_file(self,blueprint_path):
-        with open(blueprint_path,"r") as map:
-            for line in map.readlines():
-                self.tile_map.append(line.strip("\n").split(","))
-
-    def build_invisiwalls(self):
-        for tile in self.tiles:
-            if tile.tile_code in ["00","01","33"]: #emptyspace, wall, or object
-                tile_pos = tile.rect.center
-                invisiblock = invisi_block(tile_pos[0],tile_pos[1])
-                self.invisiwalls.add(invisiblock)
-
-    def build_from_blueprint(self):
-        y = self.rect.y
-        for line in self.tile_map:
-            x = self.rect.x
-            for tile in line:
-                if tile == "00":
-                    outline = outline_tile(x,y,tile)
-                    self.tiles.add(outline)
-                    x += tile_size
-                elif tile == "01":
-                    wall = wall_tile(x,y,tile)
-                    self.tiles.add(wall)
-                    x += tile_size
-                elif tile == "02":
-                    floor = floor_tile(x,y,tile)
-                    self.tiles.add(floor)
-                    x += tile_size
-                elif tile == "33":
-                    object = object_tile(x,y,tile)
-                    self.tiles.add(object)
-                    x += tile_size
-                elif tile == "99":
-                    door = door_tile(x,y,tile)
-                    self.tiles.add(door)
-                    x += tile_size
-                elif tile == "98":
-                    door = door_tile(x,y,tile)
-                    self.entry_point = door.rect.center
-                    self.tiles.add(door)
-                    x += tile_size
-                else:
-                    print("build_from_blueprint went horribly wrong!")
-            y += tile_size
+    def map_from_png(self,png_path):
+        default_tile_size = 16
+        image = pygame.image.load(png_path)
+        img_rect = image.get_rect()
+        new_dimensions = (img_rect.width * (tile_size//default_tile_size),img_rect.height * (tile_size//default_tile_size))
+        print(new_dimensions)
+        image = pygame.transform.scale(image,new_dimensions)
+        return image
 
     def offset_for_entry_tile(self,screen_size):
         #find entry tile --> 98
-        offset = [tile.rect.center for tile in self.tiles if tile.tile_code == "98"][0]
-        self.entry_loc = (screen_size[0]/2-200,screen_size[1]/2)
-        for tile in self.tiles:
-            tile.rect.x -= offset[0] - screen_size[0]/2
-            tile.rect.y -= offset[1] - screen_size[1]/1.2
+        row_loc = None
+        col_loc = None
+        for row in self.tile_map:
+            if "98" in row:
+                row_loc = self.tile_map.index(row)
+                break
+        col_loc = self.tile_map[row_loc].index("98")
+        [off_x,off_y] = [row_loc*tile_size,col_loc*tile_size]
+        print("map_rect x,y BEFORE: ",self.rect.x,self.rect.y)
+        print(off_x,off_y," from ",row_loc,col_loc)
+        self.rect.x = off_x - self.rect.width - screen_size[0]/2 + (self.rect.width-off_x)
+        self.rect.y = off_y - self.rect.height - screen_size[1]/2
+        print("map_rect x,y AFTER: ",self.rect.x,self.rect.y)
+
+
+
+    def offset_to_center(self):
+        self.rect.x -= self.rect.width/2
+        self.rect.y -= self.rect.height/2
+
+    def tile_map_from_file(self,blueprint_path):
+        tile_map = []
+        with open(blueprint_path,"r") as map:
+            for line in map.readlines():
+                tile_map.append(line.strip("\n").split(","))
+        return tile_map
+
+    def build_invisiwalls(self):
+        x = self.rect.x
+        y = self.rect.y
+        for row in self.tile_map:
+            x = self.rect.x
+            for tile in row:
+                if tile == "11":
+                    self.invisiwalls.add(invisi_block(x,y))
+                    x += tile_size
+                elif tile in ["00","98"]:
+                    x += tile_size
+                else:
+                    print("whoopsie!")
+            y += tile_size
 
     def move_map(self,scroll):
         self.rect.x += scroll[0]
@@ -106,7 +96,8 @@ class room_tile(pygame.sprite.Sprite):
         self.image = pygame.image.load(bg_image_path)
         self.image = pygame.transform.scale(self.image,(tile_size,tile_size))
         self.rect = self.image.get_rect()
-        self.rect.center = (x,y)
+        self.rect.x = x
+        self.rect.y = y
         self.return_self()
 
     def draw_self(self,surface,x,y):
@@ -150,7 +141,8 @@ class invisi_block(pygame.sprite.Sprite):
         self.image.set_alpha(0)
         self.image.fill((255,255,40))
         self.rect = self.image.get_rect()
-        self.rect.center = (x,y)
+        self.rect.x = x
+        self.rect.y = y
         self.radius = self.dimensions[0] - self.dimensions[0] / 4
 
 

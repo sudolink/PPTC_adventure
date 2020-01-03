@@ -24,7 +24,7 @@ class Player(pygame.sprite.Sprite):
         self.load_walks()
         self.walk_frame = 0
         self.idles = self.resize_self(self.idles)
-        self.direction = "idle"
+        self.direction = "up"
         self.opposite_direction = {"up":"down","left":"right","up_left":"down_right","up_right":"down_left",
                                 "down":"up","right":"left","down_right":"up_left","down_left":"up_right"}
         self.image =  self.idles[0]
@@ -33,7 +33,7 @@ class Player(pygame.sprite.Sprite):
         self.rect.center = loc
         #######################################
         #ADD to all sprites: own sprite and bottom sprite
-        self.collision_rect = Player_collision_block(self,tile_size)
+        self.collision_rect = Player_collision_block(self,self.width)
         self.shadow = Player_shadow(self,tile_size)
         sprites.player_sprite.add(self,self.collision_rect)
 
@@ -89,25 +89,48 @@ class Player(pygame.sprite.Sprite):
     def move(self,scroll,direction):
         #self.rect.x += scroll[0]
         #self.rect.y += scroll[1]
+        self.resize_collision_block()
         self.animate_walk(direction)
         self.direction = direction
 
     def be_idle(self):
         self.image = self.idles[0]
+
+    def resize_collision_block(self):
+        udi_width = self.width /2
+        strafe_width = self.width
+        lr_width = self.width
+        if self.direction in ["up","down","idle"]:
+            sprites.player_sprite.remove(self.collision_rect)
+            self.collision_rect = Player_collision_block(self,udi_width)
+            sprites.player_sprite.add(self.collision_rect)
+        elif self.direction in ["left","right"]:
+            sprites.player_sprite.remove(self.collision_rect)
+            self.collision_rect = Player_collision_block(self,lr_width)
+            sprites.player_sprite.add(self.collision_rect)
+        else:
+            sprites.player_sprite.remove(self.collision_rect)
+            self.collision_rect = Player_collision_block(self,strafe_width)
+            sprites.player_sprite.add(self.collision_rect)
+
+
+
 ###############################
 class Player_collision_block(pygame.sprite.Sprite):
-    def __init__(self,other,tile_size):
+    def __init__(self,other,width):
         super().__init__()
-        self.width = tile_size
-        self.height = tile_size/4
+        self.width = width
+        self.height = other.height/8
         self.image = pygame.Surface((self.width,self.height))
         self.image.fill((0,100,255))
+        self.image.set_alpha(77)
         self.rect = self.image.get_rect()
         self.rect.center = other.rect.center
-        self.rect.y += tile_size - self.height/2
+        self.rect.y += other.height/2 - self.height/2
 
     def check_collision(self,colliding_sprite_list):
         return pygame.sprite.spritecollide(self,colliding_sprite_list,False)
+
 
 class Player_shadow():
     def __init__(self,other,tile_size):
