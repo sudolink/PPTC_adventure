@@ -4,7 +4,7 @@ from rooms import tile_size
 
 mod_keys = [pygame.K_RSHIFT,pygame.K_LSHIFT]
 move_keys = [pygame.K_w,pygame.K_a,pygame.K_s,pygame.K_d]
-scroll_speed = tile_size/8
+scroll_speed = 12#tile_size/8
 map_moves = {"left":[scroll_speed,0],"right":[-scroll_speed,0],"up":[0,scroll_speed],"down":[0,-scroll_speed],
             "up_right":[-scroll_speed/2,scroll_speed/2],"up_left":[scroll_speed/2,scroll_speed/2],"down_right":[-scroll_speed/2,-scroll_speed/2],"down_left":[scroll_speed/2,-scroll_speed/2]}
 player_moves = {"left":[-scroll_speed,0],"right":[scroll_speed,0],"up":[0,-scroll_speed],"down":[0,scroll_speed],

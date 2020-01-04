@@ -7,6 +7,8 @@ path_to_walk_gifs_RIGHT = pathlib.Path("./assets/character/walk-frames/RIGHT")
 path_to_walk_gifs_LEFT = pathlib.Path("./assets/character/walk-frames/LEFT")
 path_to_walk_gifs_UP = pathlib.Path("./assets/character/walk-frames/UP")
 path_to_walk_gifs_DOWN = pathlib.Path("./assets/character/walk-frames/DOWN")
+path_to_walk_gifs_UP_RIGHT = pathlib.Path("./assets/character/walk-frames/UP_RIGHT")
+path_to_walk_gifs_UP_LEFT = pathlib.Path("./assets/character/walk-frames/UP_LEFT")
 path_to_idles = pathlib.Path("./assets/character/idles/")
 PLAYER_IDLES = [item.name for item in path_to_idles.glob("**/*") if item.is_file()]
 
@@ -67,11 +69,23 @@ class Player(pygame.sprite.Sprite):
             frame = pygame.image.load(str(path_to_walk_gifs_DOWN)+"\\{}_frame.png".format(num))
             walk_down.append(frame)
 
+        walk_up_right = []
+        for num in range(0,12):
+            frame = pygame.image.load(str(path_to_walk_gifs_UP_RIGHT)+"\\{}_frame.gif".format(num))
+            walk_up_right.append(frame)
+
+        walk_up_left = []
+        for num in range(0,12):
+            frame = pygame.image.load(str(path_to_walk_gifs_UP_LEFT)+"\\{}_frame.png".format(num))
+            walk_up_left.append(frame)
+
         self.walking_gifs["left"] = self.resize_self(walk_left)
         self.walking_gifs["right"] = self.resize_self(walk_right)
         self.walking_gifs["up"] = self.resize_self(walk_up)
         self.walking_gifs["down"] = self.resize_self(walk_down)
-        del walk_right,walk_left,walk_up,walk_down
+        self.walking_gifs["up_right"] = self.resize_self(walk_up_right)
+        self.walking_gifs["up_left"] = self.resize_self(walk_up_left)
+        del walk_right,walk_left,walk_up,walk_down,walk_up_right,walk_up_left
 ###############################
     def animate_walk(self,direction):
 
